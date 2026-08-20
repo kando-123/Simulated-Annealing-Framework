@@ -1,0 +1,103 @@
+import json
+import matplotlib
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+# Wyłączenie interaktywnego okna graficznego (tryb headless)
+matplotlib.use('Agg')
+
+def get_distance(distances: dict, u: int, v: int) -> float:
+    """
+    Pobiera dystans między miastem u oraz v, obsługując symetrię 
+    oraz fakt, że klucze w strukturze JSON są ciągami znaków (str).
+    """
+    if u == v:
+        return 0.0
+    
+    u_str, v_str = str(u), str(v)
+    
+    # Sprawdzenie relacji u -> v
+    if u_str in distances and v_str in distances[u_str]:
+        return float(distances[u_str][v_str])
+    
+    # Sprawdzenie relacji v -> u (dla symetrycznych grafów)
+    if v_str in distances and u_str in distances[v_str]:
+        return float(distances[v_str][u_str])
+    
+    raise KeyError(f"Brak zadeklarowanego dystansu między miastami {u} a {v}.")
+
+
+def visualize_tsp(instance_path: str, solution_path: str, output_image_path: str = "tsp_solution.png"):
+    # 1. Wczytanie instancji problemu
+    with open(instance_path, 'r', encoding='utf-8') as f:
+        instance = json.load(f)
+        
+    n_cities = instance["n_cities"]
+    coords = instance["coords"]
+    distances = instance["distances"]
+
+    # 2. Wczytanie rozwiązania (lista indeksów miast)
+    with open(solution_path, 'r', encoding='utf-8') as f:
+        solution = json.load(f)
+
+    if len(solution) != n_cities:
+        raise ValueError(f"Długość trasy ({len(solution)}) nie zgadza się z liczbą miast ({n_cities}).")
+
+    # 3. Obliczenie całkowitego kosztu trasy (z uwzględnieniem domknięcia cyklu)
+    total_cost = 0.0
+    n = len(solution)
+    for i in range(n):
+        u = solution[i]
+        v = solution[(i + 1) % n]  # Operator % domyka cykl z ostatniego do pierwszego miasta
+        total_cost += get_distance(distances, u, v)
+
+    # 4. Przygotowanie punktów do wykresu (z zamknięciem pętli)
+    solution_closed = solution + [solution[0]]
+    x_coords = [coords[city][0] for city in solution_closed]
+    y_coords = [coords[city][1] for city in solution_closed]
+
+    # 5. Rysowanie wykresu
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    # Krawędzie trasy
+    ax.plot(x_coords, y_coords, 'o-', color='#1f77b4', linewidth=1.5, markersize=5, label='Trasa TSP')
+
+    # Wierzchołek startowy
+    start_city = solution[0]
+    ax.plot(coords[start_city][0], coords[start_city][1], 'ro', markersize=9, label=f'Start (Miasto {start_city})')
+
+    # Etykiety punktów (numery miast)
+    for city_id, (x, y) in enumerate(coords):
+        ax.annotate(
+            str(city_id), 
+            (x, y), 
+            textcoords="offset points", 
+            xytext=(0, 6), 
+            ha='center', 
+            fontsize=8,
+            weight='bold'
+        )
+
+    # Konfiguracja estetyczna wykresu
+    ax.set_title(f"Rozwiązanie TSP (N = {n_cities})\nCałkowity koszt: {total_cost:.2f}", fontsize=12, fontweight='bold')
+    ax.set_xlabel("Współrzędna X")
+    ax.set_ylabel("Współrzędna Y")
+    ax.grid(True, linestyle='--', alpha=0.5)
+    ax.legend(loc='upper right')
+
+    # 6. Zapis rysunku do pliku
+    fig.tight_layout()
+    fig.savefig(output_image_path, dpi=300)
+    plt.close(fig)
+    
+    print(f"Obliczony koszt trasy: {total_cost:.4f}")
+    print(f"Wykres pomyślnie zapisano w pliku: {Path(output_image_path).resolve()}")
+
+
+if __name__ == "__main__":
+    # Przykład wywołania skryptu:
+    visualize_tsp(
+        instance_path="../ins/tsp_g05x05.json", 
+        solution_path="../sol/sol_g05x05.json", 
+        output_image_path="tsp_g05x05-sol_g05x05.png"
+    )
