@@ -71,7 +71,7 @@ class AdaptiveTransformer(AbstractTransformer):
     #   the upper bound mechanism off), default 10
     def __init__(self, **kwargs):
         
-        self.initial = kwargs.get('initial_weight', 1.0)        
+        self.initial_weight = kwargs.get('initial_weight', 1.0)        
         self.positive_feedback = kwargs.get('positive_feedback', 1.10) # MULTIPLIER
         self.negative_feedback = kwargs.get('negative_feedback', 1.01) # DIVISOR!!!
         self.min_weight = kwargs.get('min_weight', 0.10)
@@ -97,7 +97,7 @@ class AdaptiveTransformer(AbstractTransformer):
     def reset(self, transformations: list[AbstractTransformation]):
         self.pool = list(transformations)
         self.indices = [i for i in range(len(self.pool))]
-        self.weights = [self.initial for transformation in self.pool]
+        self.weights = [self.initial_weight for transformation in self.pool]
     
     def transform(self, s1: AbstractSolution) -> AbstractSolution:
         

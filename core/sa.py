@@ -10,46 +10,11 @@ import random
 
 class SimulatedAnnealing:
     
-    # Keyword arguments:
-    # - n_iters = numer of iterations per cooling scheme epoch, default 1000
-    # - scheme = type of cooling scheme: 'lundymees' (default), 'geometric',
-    #   'linear'; see the respective class for required additional kwargs
-    # - transformer = type of transformation pool: 'uniform' (default),
-    #   'adaptive'; see the respective class for required additional kwargs
-    # - callback (optional) = callable invoked with the best and the current
-    #   solution at the end of every iteration, the call should execute quickly
-    def __init__(self, **kwargs):
-        self.n_iters = kwargs.get('n_iters', 1000)
-        self.scheme = SimulatedAnnealing.make_scheme(**kwargs)
-        self.transformer = SimulatedAnnealing.make_transformer(**kwargs)
-        self.callback = kwargs.get('callback')
-    
-    SCHEME_CREATORS = {
-        'geometric': GeometricScheme.create,
-        'lundymees': LundyMeesScheme.create,
-        'linear':    LinearScheme.create
-    }
-    
-    @staticmethod
-    def make_scheme(**kwargs):
-        creator = SimulatedAnnealing.SCHEME_CREATORS.get(kwargs.get('scheme', 'lundymees'))
-        if creator is not None:
-            return creator(**kwargs)
-        else:
-            raise Exception(f"Unknown cooling scheme type: '{kwargs['scheme']}'")
-    
-    TRANSFORMER_CREATORS = {
-        'uniform': UniformTransformer.create,
-        'adaptive': AdaptiveTransformer.create
-    }
-    
-    @staticmethod
-    def make_transformer(**kwargs) -> AbstractTransformer:
-        creator = SimulatedAnnealing.TRANSFORMER_CREATORS.get(kwargs.get('transformer', 'uniform'))
-        if creator is not None:
-            return creator(**kwargs)
-        else:
-            raise Exception(f"Unknown transformer type: '{kwargs['transformer']}'")
+    def __init__(self, n_iters, scheme, transformer, callback = None):
+        self.n_iters = n_iters
+        self.scheme = scheme
+        self.transformer = transformer
+        self.callback = callback
     
     def solve(self, problem: AbstractProblem) -> AbstractSolution:
         

@@ -1,4 +1,6 @@
 from core.sa import SimulatedAnnealing
+from core.scheme import LundyMeesScheme
+from core.transformation import AdaptiveTransformer
 from impl.tsp import TspProblem, TspSolution
 
 import argparse
@@ -31,19 +33,9 @@ for u, vals in distances_dict.items():
     for v, d in vals.items():
         tsp[int(u), int(v)] = d
 
-class Callback:
-    
-    def __init__(self, N=1):
-        self.N = N
-        self.n = 0
-    
-    def __call__(self, best: TspSolution, curr: TspSolution):
-        if self.n == 0:
-            print(f'\t\tb: {best.get_cost()}, c: {curr.get_cost()}')
-        self.n = (self.n + 1) % self.N
-        
-cb = Callback(1000)
-sa = SimulatedAnnealing(n_iters=1000, n_epochs=1000, callback=cb)
+sa = SimulatedAnnealing(n_iters=1000,
+                        scheme=LundyMeesScheme(n_epochs=1000, prob1=0.95, prob2=0.05, fraction=0.0001),
+                        transformer=AdaptiveTransformer())
 
 for n in range(args.n):
     
