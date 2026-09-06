@@ -3,6 +3,7 @@
 import json
 import matplotlib
 import matplotlib.pyplot as plt
+import sys
 from pathlib import Path
 
 # Wyłączenie interaktywnego okna graficznego (tryb headless)
@@ -96,10 +97,11 @@ def visualize_tsp(instance_path: str, solution_path: str, output_image_path: str
     print(f"Wykres pomyślnie zapisano w pliku: {Path(output_image_path).resolve()}")
 
 
-if __name__ == "__main__":
-    # Przykład wywołania skryptu:
+if len(sys.argv) > 3:
     visualize_tsp(
-        instance_path="../ins/tsp_g05x05.json", 
-        solution_path="../sol/sol_g05x05.json", 
-        output_image_path="tsp_g05x05-sol_g05x05.png"
+        instance_path=sys.argv[1],
+        solution_path=sys.argv[2],
+        output_image_path=sys.argv[3]
     )
+else:
+    print('Provide command-line arguments: instance, solution, output.')

@@ -57,7 +57,7 @@ class AdaptiveTransformer(AbstractTransformer):
     
     @staticmethod
     def create(**kwargs):
-        return AdaptiveTransformer(kwargs)
+        return AdaptiveTransformer(**kwargs)
     
     # Keyword arguments:
     # - positive_feedback = multiplier applied on the weights in case of improvement,
@@ -76,6 +76,7 @@ class AdaptiveTransformer(AbstractTransformer):
         self.negative_feedback = kwargs.get('negative_feedback', 1.01) # DIVISOR!!!
         self.min_weight = kwargs.get('min_weight', 0.10)
         self.max_weight = kwargs.get('max_weight', 10.0)
+        self.callback = kwargs.get('callback')
         self.check_args()
         
         self.pool = None
@@ -110,5 +111,8 @@ class AdaptiveTransformer(AbstractTransformer):
             self.weights[index] = min(self.weights[index] * self.positive_feedback, self.max_weight)
         elif s2.get_cost() > s1.get_cost():
             self.weights[index] = max(self.weights[index] / self.negative_feedback, self.min_weight)
+        
+        if self.callback:
+            self.callback(self, index, s2)
         
         return s2

@@ -1,7 +1,5 @@
 from core.problem import AbstractProblem
 from core.solution import AbstractSolution
-from core.scheme import GeometricScheme, LundyMeesScheme, LinearScheme
-from core.transformation import AbstractTransformer, UniformTransformer, AdaptiveTransformer
 
 import math
 import random
@@ -9,6 +7,13 @@ import random
 
 
 class SimulatedAnnealing:
+    
+    @staticmethod
+    def create(**kwargs):
+        return SimulatedAnnealing(kwargs['n_iters'],
+                                  kwargs['scheme'],
+                                  kwargs['transformer'],
+                                  kwargs.get('callback'))
     
     def __init__(self, n_iters, scheme, transformer, callback = None):
         self.n_iters = n_iters
