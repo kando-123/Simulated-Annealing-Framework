@@ -22,6 +22,9 @@ class AbstractTransformer:
     def reset(self, t: list[AbstractTransformation]):
         pass
     
+    def suggest_weights(self, weights: list[float]):
+        pass
+    
     def transform(self, s: AbstractSolution) -> AbstractSolution:
         pass
 
@@ -72,10 +75,10 @@ class AdaptiveTransformer(AbstractTransformer):
     def __init__(self, **kwargs):
         
         self.initial_weight = kwargs.get('initial_weight', 1.0)        
-        self.positive_feedback = kwargs.get('positive_feedback', 1.10) # MULTIPLIER
+        self.positive_feedback = kwargs.get('positive_feedback', 1.01) # MULTIPLIER
         self.negative_feedback = kwargs.get('negative_feedback', 1.01) # DIVISOR!!!
-        self.min_weight = kwargs.get('min_weight', 0.10)
-        self.max_weight = kwargs.get('max_weight', 10.0)
+        self.min_weight = kwargs.get('min_weight', 0.01)
+        self.max_weight = kwargs.get('max_weight', 100)
         self.callback = kwargs.get('callback')
         self.check_args()
         
@@ -100,6 +103,10 @@ class AdaptiveTransformer(AbstractTransformer):
         self.indices = [i for i in range(len(self.pool))]
         self.weights = [self.initial_weight for transformation in self.pool]
     
+    def suggest_weights(self, weights):
+        if weights:
+           self.weights = list(weights)
+    
     def transform(self, s1: AbstractSolution) -> AbstractSolution:
         
         # Transformation
@@ -113,6 +120,6 @@ class AdaptiveTransformer(AbstractTransformer):
             self.weights[index] = max(self.weights[index] / self.negative_feedback, self.min_weight)
         
         if self.callback:
-            self.callback(self, index, s2)
+            self.callback(self)
         
         return s2

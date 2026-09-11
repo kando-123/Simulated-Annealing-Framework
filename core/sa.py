@@ -15,11 +15,12 @@ class SimulatedAnnealing:
                                   kwargs['transformer'],
                                   kwargs.get('callback'))
     
-    def __init__(self, n_iters, scheme, transformer, callback = None):
+    def __init__(self, n_iters, scheme, transformer, callback = None, threshold = None):
         self.n_iters = n_iters
         self.scheme = scheme
         self.transformer = transformer
         self.callback = callback
+        self.threshold = threshold
     
     def solve(self, problem: AbstractProblem) -> AbstractSolution:
         
@@ -37,6 +38,9 @@ class SimulatedAnnealing:
         transformations = problem.transformations()
         self.transformer.reset(transformations)
         
+        if weights := problem.suggested_weights():
+            self.transformer.suggest_weights(weights)
+        
         # Search loop
         while not self.scheme.is_minimal():
             for _ in range(self.n_iters):
@@ -49,6 +53,8 @@ class SimulatedAnnealing:
                     current = candidate
                     if current.get_cost() < best.get_cost():
                         best = current
+                        if self.threshold is not None and best.get_cost() < self.threshold:
+                           return best
                 
                 # Probabilistic update
                 else:

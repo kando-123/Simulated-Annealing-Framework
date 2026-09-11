@@ -16,3 +16,6 @@ class AbstractProblem:
     # Returns problem-specific transformations applicable to the solutions.
     def transformations(self) -> list[AbstractTransformation]:
         pass
+    
+    def suggested_weights(self) -> list[float]:
+        return None
